@@ -54,7 +54,7 @@ module.exports = {
             });
     },
     deleteThought(req, res) {
-        Thought.findOneAndRemove({ _id: req.params.thoughtId })
+        Thought.findOneAndDelete({ _id: req.params.thoughtId })
             .then((thought) =>
                 !thought ? res.status(404).json({ message: 'No thought with this ID' })
                     : User.findOneAndUpdate(
@@ -62,6 +62,11 @@ module.exports = {
                         { $pull: { thoughts: req.params.thoughtId } },
                         { new: true }
                     )
+                        .then((user) => {
+                            !user
+                                ? res.status(404).json({ message: 'Thought deleted but no user found with ID' })
+                                : res.json({ message: 'Thought deleted succesfully' })
+                        })
             )
             .catch((err) => res.status(500).json(err));
     },
